@@ -162,8 +162,61 @@ class ExpectimaxAgent(MultiAgentSearchAgent):
         All ghosts should be modeled as choosing uniformly at random from their
         legal moves.
         """
-        "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        numberOfAgents = gameState.getNumAgents()
+
+        def expectimax(state, agentIndex, depth):
+            if depth == self.depth or state.isWin() or state.isLose():
+                return self.evaluationFunction(state)
+
+            actions = state.getLegalActions(agentIndex)
+
+            if not actions:
+                return self.evaluationFunction(state)
+
+            nextAgent = (agentIndex + 1) % numberOfAgents
+            nextDepth = depth
+
+            if nextAgent == 0:
+                nextDepth += 1
+
+            if agentIndex == 0:
+                bestScore = float("-inf")
+
+                for action in actions:
+                    nextState = state.generateSuccessor(agentIndex, action)
+                    score = expectimax(nextState, nextAgent, nextDepth)
+                    bestScore = max(bestScore, score)
+
+                return bestScore
+
+            totalScore = 0.0
+
+            for action in actions:
+                nextState = state.generateSuccessor(agentIndex, action)
+                totalScore += expectimax(nextState, nextAgent, nextDepth)
+
+            return totalScore / len(actions)
+
+        legalActions = gameState.getLegalActions(0)
+
+        if not legalActions:
+            return Directions.STOP
+
+        bestAction = legalActions[0]
+        bestScore = float("-inf")
+
+        nextAgent = 1 % numberOfAgents
+        nextDepth = 1 if nextAgent == 0 else 0
+
+        for action in legalActions:
+            nextState = gameState.generateSuccessor(0, action)
+            score = expectimax(nextState, nextAgent, nextDepth)
+
+            if score > bestScore:
+                bestScore = score
+                bestAction = action
+
+        return bestAction
 
 def betterEvaluationFunction(currentGameState: GameState):
     """
